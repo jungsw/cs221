@@ -1,5 +1,6 @@
-import MapProcessor
-
+import IntersectionNode
+import processor
+import googlemaps 
 '''
 Created on Nov 28, 2015
 
@@ -7,4 +8,6 @@ Created on Nov 28, 2015
 '''
 
 if __name__ == '__main__':
-    processor = MapProcessor('train-2.csv', 'train 2.csv')
+    processor = processor('train-2.csv', 'train 2.csv')
+    gmap = googlemaps.Client(key = 'AIzaSyCufQQEadq3JZOx5sXfwpfy4AUcR1AIXMM')
+    node = IntersectionNode(100, 100, gmap)
