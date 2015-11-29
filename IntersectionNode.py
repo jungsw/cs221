@@ -8,7 +8,7 @@ Created on Nov 28, 2015
 '''
 
 class IntersectionNode(object):
-
+    # haha
     def __init__(self, x_loc, y_loc, gmap):
         '''
         Node is defined as an intersection of two or more roads, represented by lat/longitude.
