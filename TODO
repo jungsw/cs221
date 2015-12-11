@@ -1,0 +1,8 @@
+TODO
+
+1. Make Nodes
+	1) X,Y location will be done by Chan
+	2) Make adjacent Node List
+
+2. Incorporate crime data
+	1) Get (x,y) and reflect it in each node. (Add crime penalty)

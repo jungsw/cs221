@@ -43,7 +43,7 @@ class Processor(object):
         for index, row in self.traffic_data.iterrows():
 
             adjacent_list = []
-            if index > 1 and index < 18467:
+            if index > 1:
                 if self.traffic_data.ix[index - 1]['inter1'] == row[0]:
                     key1 = self.traffic_data.ix[index - 1]['inter1'] + ', ' + self.traffic_data.ix[index - 1]['inter2']
                     adjacent_list.append(key1)
@@ -119,10 +119,7 @@ class Processor(object):
                 train_data['y_loc'].append(row[8])
         
         self.train_data = pd.DataFrame(train_data)  
-        #print self.train_data
-
-    def printCrimesInRegion(lat1, lat2, long1, long2):
-        
+        print self.train_data
     
     def processDistances(self):
         pass
@@ -134,6 +131,6 @@ class Processor(object):
 nodemap = {'37.764861, -122.422886': ['37.764835, -122.423143', '37.764029, -122.422814', '37.764922, -122.421910'], \
            '37.763967, -122.424070': ['37.764777, -122.424146','37.764027, -122.422799']}
 process = Processor('AIzaSyCufQQEadq3JZOx5sXfwpfy4AUcR1AIXMM')
-#process.processTrafficCSV('List_of_Intersections_only.csv')
+process.processTrafficCSV('List_of_Intersections_only.csv')
 process.processTrainCSV('train.csv')
-#process.processTrafficData()
+process.processTrafficData()
