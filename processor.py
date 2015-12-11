@@ -69,7 +69,6 @@ class Processor(object):
                 
             node = row['node']
             node.setAdjacents(adjacent_list)
-            #print node
     """
     Processes traffic intersection data and populates it with relevant information
     as a Pandas Data Frame
@@ -123,6 +122,20 @@ class Processor(object):
 
     def printCrimesInRegion(lat1, lat2, long1, long2):
         
+    
+    def processIntersectionToLatLong(self, lat_long_filename):
+        print 'I am at lat long'
+        with open(lat_long_filename, 'rb') as csvfile:
+            has_header = csv.Sniffer().has_header(csvfile.read(1024))
+            csvfile.seek(0)            
+            mapreader = csv.reader(csvfile, delimiter = ',')
+            
+            if has_header:
+                next(mapreader)
+            
+            for row in mapreader:
+                print row[0]
+                print row[1]
     
     def processDistances(self):
         pass
