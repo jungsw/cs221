@@ -136,7 +136,7 @@ class Processor(object):
         with open(lat_long_filename, 'rb') as csvfile:
             mapreader = csv.reader(csvfile, delimiter = '|')
             next(mapreader, None)
-
+            
             for row in mapreader:
                 latlong_list = row[0].strip('*').split(',')
                 latlong_list[0] = latlong_list[0].strip(' ')
@@ -153,25 +153,20 @@ class Processor(object):
                         stnames[1] = stnames[1].strip(' ').upper()
                         if stnames[1][0] =='0':
                             stnames[1] = stnames[1][1:]
-                                                
-                        keylist = np.where(self.traffic_data['inter1'] == stnames[0])[0]
-                        keylist1 = np.where(self.traffic_data['inter2'] == stnames[1])[0]
-                        ind_list = np.intersect1d(keylist, keylist1)
                         
-                        keylist2 = np.where(self.traffic_data['inter2'] == stnames[0])[0]
-                        keylist3 = np.where(self.traffic_data['inter1'] == stnames[1])[0]
-                        ind_list1 = np.intersect1d(keylist2, keylist3)
-                        
-                        if len(ind_list) >= 1:
-                            index = int(ind_list[0])
-                            self.traffic_data.set_value(index, 'x_loc', latlong_list[0])
-                            self.traffic_data.set_value(index, 'y_loc', latlong_list[1])
-                            
-                        elif len(ind_list1) >= 1:
-                            index1 = int(ind_list1[0])
-                            self.traffic_data.set_value(index1, 'x_loc', latlong_list[0])
-                            self.traffic_data.set_value(index1, 'y_loc', latlong_list[1])
-                
+                        self.traffic_data.loc[(self.traffic_data.inter1 == stnames[0]) \
+                                              & (self.traffic_data.inter2 == stnames[1]), 'x_loc'] = latlong_list[0]
+                        self.traffic_data.loc[(self.traffic_data.inter1 == stnames[0]) \
+                                              & (self.traffic_data.inter2 == stnames[1]), 'y_loc'] = latlong_list[1]
+
+                        self.traffic_data.loc[(self.traffic_data.inter1 == stnames[1]) \
+                                              & (self.traffic_data.inter2 == stnames[0]), 'x_loc'] = latlong_list[0]
+                        self.traffic_data.loc[(self.traffic_data.inter1 == stnames[1]) \
+                                              & (self.traffic_data.inter2 == stnames[0]), 'y_loc'] = latlong_list[1]
+            
+            self.traffic_data = self.traffic_data[self.traffic_data.x_loc != 0.0]
+            print self.traffic_data
+  
     
     def processDistances(self):
         pass
