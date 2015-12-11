@@ -82,7 +82,7 @@ def crawl():
 def getStat():
 	succCount, failedCount = 0, 0
 	for index, line in enumerate(inputFile.readlines()):
-		if index > startIndex: break
+		# if index > startIndex: break
 
 		if line[0]=='*': succCount += 1
 		else: failedCount += 1
@@ -95,8 +95,8 @@ def getStat():
 	# Some results point to center of SF
 
 ###### Main ######
-crawl()
-# getStat()
+# crawl()
+getStat()
 	
 
 
