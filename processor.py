@@ -43,7 +43,7 @@ class Processor(object):
         for index, row in self.traffic_data.iterrows():
 
             adjacent_list = []
-            if index > 1:
+            if index > 1 and index < 18467:
                 if self.traffic_data.ix[index - 1]['inter1'] == row[0]:
                     key1 = self.traffic_data.ix[index - 1]['inter1'] + ', ' + self.traffic_data.ix[index - 1]['inter2']
                     adjacent_list.append(key1)
@@ -69,7 +69,7 @@ class Processor(object):
                 
             node = row['node']
             node.setAdjacents(adjacent_list)
-            print node
+            
     """
     Processes traffic intersection data and populates it with relevant information
     as a Pandas Data Frame
@@ -119,6 +119,20 @@ class Processor(object):
         
         self.train_data = pd.DataFrame(train_data)  
     
+    def processIntersectionToLatLong(self, lat_long_filename):
+        print 'I am at lat long'
+        with open(lat_long_filename, 'rb') as csvfile:
+            has_header = csv.Sniffer().has_header(csvfile.read(1024))
+            csvfile.seek(0)            
+            mapreader = csv.reader(csvfile, delimiter = ',')
+            
+            if has_header:
+                next(mapreader)
+            
+            for row in mapreader:
+                print row[0]
+                print row[1]
+    
     def processDistances(self):
         pass
         # for elem in self.node_map.keys():
@@ -130,5 +144,6 @@ nodemap = {'37.764861, -122.422886': ['37.764835, -122.423143', '37.764029, -122
            '37.763967, -122.424070': ['37.764777, -122.424146','37.764027, -122.422799']}
 process = Processor('AIzaSyCufQQEadq3JZOx5sXfwpfy4AUcR1AIXMM')
 process.processTrafficCSV('List_of_Intersections_only.csv')
-process.processTrainCSV('../train-2.csv')
+process.processTrainCSV('train-2.csv')
 process.processTrafficData()
+# process.processIntersectionToLatLong('IntersectionsWithLatLng.csv')
