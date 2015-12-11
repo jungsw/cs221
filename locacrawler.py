@@ -5,9 +5,11 @@ import json
 # https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDX1GshmuCV3qfFCfoBqHTtVw4SFbLWT8w&address=04TH%20ST%20and%20PERRY%20ST%20in%20san%20francisco
 
 # versiempre@gmail.com, hanklee514@gmail.com, jake, sw
-apiKeyList = ['AIzaSyCO7AAKGTSz9p-ZfIvPeqyPDtMAQA27jZ0', 'AIzaSyDqDhnuWqA6KWy8-VM_tTByD4mgFWIP0pM', \
-							'AIzaSyDX1GshmuCV3qfFCfoBqHTtVw4SFbLWT8w', 'AIzaSyCufQQEadq3JZOx5sXfwpfy4AUcR1AIXMM']
-apiKey = apiKeyList[2]
+apiKeyList = ['AIzaSyCO7AAKGTSz9p-ZfIvPeqyPDtMAQA27jZ0', \
+			'AIzaSyDqDhnuWqA6KWy8-VM_tTByD4mgFWIP0pM', \
+			'AIzaSyDX1GshmuCV3qfFCfoBqHTtVw4SFbLWT8w', \
+			'AIzaSyCufQQEadq3JZOx5sXfwpfy4AUcR1AIXMM']
+apiKey = apiKeyList[3]
 baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json'
 
 inputFile = open('IntersectionsWithLatLng.csv', 'r')
