@@ -64,13 +64,14 @@ class Processor(object):
                 if len(ind_list) >= 1:
                     ind = ind_list[0]
                     
-                    if self.traffic_data.ix[ind - 1]['inter1'] == row[1]:
-                        key3 = self.traffic_data.ix[ind - 1]['inter1'] + ', ' + self.traffic_data.ix[ind - 1]['inter2']
-                        adjacent_list.append(key3)
-                    
-                    if self.traffic_data.ix[ind + 1]['inter1'] == row[1]:
-                        key4 = self.traffic_data.ix[ind + 1]['inter1'] + ', ' + self.traffic_data.ix[ind + 1]['inter2']
-                        adjacent_list.append(key4)
+                    if ind > 1 and ind < 18467:
+                        if self.traffic_data.ix[ind - 1]['inter1'] == row[1]:
+                            key3 = self.traffic_data.ix[ind - 1]['inter1'] + ', ' + self.traffic_data.ix[ind - 1]['inter2']
+                            adjacent_list.append(key3)
+                        
+                        if self.traffic_data.ix[ind + 1]['inter1'] == row[1]:
+                            key4 = self.traffic_data.ix[ind + 1]['inter1'] + ', ' + self.traffic_data.ix[ind + 1]['inter2']
+                            adjacent_list.append(key4)
                 
             node = row['node']
             node.setAdjacents(adjacent_list)
@@ -180,5 +181,5 @@ nodemap = {'37.764861, -122.422886': ['37.764835, -122.423143', '37.764029, -122
 process = Processor('AIzaSyCufQQEadq3JZOx5sXfwpfy4AUcR1AIXMM')
 process.processTrafficCSV('List_of_Intersections_only.csv')
 # process.processTrainCSV('train.csv')
-# process.processTrafficData()
+process.processTrafficData()
 process.processIntersectionToLatLong('IntersectionsWithLatLng.csv')
