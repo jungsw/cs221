@@ -166,6 +166,7 @@ class Processor(object):
                                               & (self.traffic_data.inter2 == stnames[0]), 'y_loc'] = latlong_list[1]
             
             self.traffic_data = self.traffic_data[self.traffic_data.x_loc != 0.0]
+            self.traffic_data.to_csv('traffic_result.csv', ',')
             print self.traffic_data
   
     
