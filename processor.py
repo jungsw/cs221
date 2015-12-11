@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import internode
 import responses, googlemaps, csv
+from _snap import count
+from _Res import Count1Resources
 
 '''
 Created on Nov 28, 2015
@@ -29,7 +31,10 @@ class Processor(object):
         return timedata.split(' ')[1]
     
     def processStreetName(self, inter):
-        return inter.split('\\')[0]
+        inter = inter.split('\\')[0].strip(' ')
+        if inter[0] == '0':
+            inter = inter[1:]
+        return inter
     
     def processNode(self, inter1, inter2):
         node = internode.IntersectionNode(inter1, inter2, self.apikey)
@@ -59,13 +64,14 @@ class Processor(object):
                 if len(ind_list) >= 1:
                     ind = ind_list[0]
                     
-                    if self.traffic_data.ix[ind - 1]['inter1'] == row[1]:
-                        key3 = self.traffic_data.ix[ind - 1]['inter1'] + ', ' + self.traffic_data.ix[ind - 1]['inter2']
-                        adjacent_list.append(key3)
-                    
-                    if self.traffic_data.ix[ind + 1]['inter1'] == row[1]:
-                        key4 = self.traffic_data.ix[ind + 1]['inter1'] + ', ' + self.traffic_data.ix[ind + 1]['inter2']
-                        adjacent_list.append(key4)
+                    if ind > 1 and ind < 18467:
+                        if self.traffic_data.ix[ind - 1]['inter1'] == row[1]:
+                            key3 = self.traffic_data.ix[ind - 1]['inter1'] + ', ' + self.traffic_data.ix[ind - 1]['inter2']
+                            adjacent_list.append(key3)
+                        
+                        if self.traffic_data.ix[ind + 1]['inter1'] == row[1]:
+                            key4 = self.traffic_data.ix[ind + 1]['inter1'] + ', ' + self.traffic_data.ix[ind + 1]['inter2']
+                            adjacent_list.append(key4)
                 
             node = row['node']
             node.setAdjacents(adjacent_list)
@@ -84,13 +90,16 @@ class Processor(object):
                 next(mapreader)
                 
             for row in mapreader:
-                traffic_data['inter1'].append(self.processStreetName(row[1]))
-                traffic_data['inter2'].append(self.processStreetName(row[2]))
+                st1 = self.processStreetName(row[1])
+                st2 = self.processStreetName(row[2])
+                traffic_data['inter1'].append(st1)
+                traffic_data['inter2'].append(st2)
                 traffic_data['x_loc'].append(0.0)
                 traffic_data['y_loc'].append(0.0)
-                traffic_data['node'].append(self.processNode(row[1], row[2]))
+                traffic_data['node'].append(self.processNode(st1, st2))
 
         self.traffic_data = pd.DataFrame(traffic_data)
+        print self.traffic_data
         #print self.traffic_data
         
     """
@@ -148,16 +157,39 @@ class Processor(object):
     def processIntersectionToLatLong(self, lat_long_filename):
         print 'I am at lat long'
         with open(lat_long_filename, 'rb') as csvfile:
-            has_header = csv.Sniffer().has_header(csvfile.read(1024))
-            csvfile.seek(0)            
-            mapreader = csv.reader(csvfile, delimiter = ',')
-            
-            if has_header:
-                next(mapreader)
+            mapreader = csv.reader(csvfile, delimiter = '|')
+            next(mapreader, None)
             
             for row in mapreader:
-                print row[0]
-                print row[1]
+                latlong_list = row[0].strip('*').split(',')
+                latlong_list[0] = latlong_list[0].strip(' ')
+                latlong_list[1] = latlong_list[1].strip(' ')
+                
+                if float(latlong_list[0]) < 10000 and float(latlong_list[0]) > 37:
+                    
+                    stnames = row[1].split(',')[0].strip(' ').split('&')
+                    stnames[0] = stnames[0].strip(' ').upper()
+                    if stnames[0][0] =='0':
+                        stnames[0] = stnames[0][1:]
+                    
+                    if len(stnames) == 2 and stnames[0] != 'SAN FRANCISCO':
+                        stnames[1] = stnames[1].strip(' ').upper()
+                        if stnames[1][0] =='0':
+                            stnames[1] = stnames[1][1:]
+                        
+                        self.traffic_data.loc[(self.traffic_data.inter1 == stnames[0]) \
+                                              & (self.traffic_data.inter2 == stnames[1]), 'x_loc'] = latlong_list[0]
+                        self.traffic_data.loc[(self.traffic_data.inter1 == stnames[0]) \
+                                              & (self.traffic_data.inter2 == stnames[1]), 'y_loc'] = latlong_list[1]
+
+                        self.traffic_data.loc[(self.traffic_data.inter1 == stnames[1]) \
+                                              & (self.traffic_data.inter2 == stnames[0]), 'x_loc'] = latlong_list[0]
+                        self.traffic_data.loc[(self.traffic_data.inter1 == stnames[1]) \
+                                              & (self.traffic_data.inter2 == stnames[0]), 'y_loc'] = latlong_list[1]
+            
+            self.traffic_data = self.traffic_data[self.traffic_data.x_loc != 0.0]
+            print self.traffic_data
+  
     
     def processDistances(self):
         pass
@@ -169,8 +201,15 @@ class Processor(object):
 nodemap = {'37.764861, -122.422886': ['37.764835, -122.423143', '37.764029, -122.422814', '37.764922, -122.421910'], \
            '37.763967, -122.424070': ['37.764777, -122.424146','37.764027, -122.422799']}
 process = Processor('AIzaSyCufQQEadq3JZOx5sXfwpfy4AUcR1AIXMM')
+<<<<<<< HEAD
 #process.processTrafficCSV('List_of_Intersections_only.csv')
 process.processTrainCSV('train.csv')
 #process.processTrafficData()
 #process.printCrimesInRegion(-122.42372, -122.40668, 37.78251, 37.78852) - for Tenderloin
 process.printCrimesInRegion(-122.45498, -122.39439, 37.75422, 37.78631)
+=======
+process.processTrafficCSV('List_of_Intersections_only.csv')
+# process.processTrainCSV('train.csv')
+process.processTrafficData()
+process.processIntersectionToLatLong('IntersectionsWithLatLng.csv')
+>>>>>>> ecadb059561463a961a10bdf4796a32dfb7904cb
