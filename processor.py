@@ -123,14 +123,36 @@ class Processor(object):
                 train_data['type'].append(row[1])
                 train_data['district'].append(row[4])
                 train_data['resolution'].append(row[5])
-                train_data['x_loc'].append(row[7])
-                train_data['y_loc'].append(row[8])
+                train_data['x_loc'].append(float(row[7]))
+                train_data['y_loc'].append(float(row[8]))
         
         self.train_data = pd.DataFrame(train_data)  
         #print self.train_data
 
-    def printCrimesInRegion(self, lat1, lat2, long1, long2):
-        pass
+    def printCrimesInRegion(self, xlow, xhigh, ylow, yhigh):
+        train_data = {'date': [], 'type': [], 'district': [], 'resolution': [], \
+                      'x_loc': [], 'y_loc': []}
+
+        xlowerbound = (self.train_data['x_loc'] >= xlow) 
+        xupperbound = (self.train_data['x_loc'] <= xhigh)
+        ylowerbound = (self.train_data['y_loc'] >= ylow) 
+        yupperbound = (self.train_data['y_loc'] <= yhigh)
+
+        selectedCrimes = self.train_data[xlowerbound & xupperbound & ylowerbound & yupperbound].reindex(columns=['x_loc', 'y_loc'])
+        selectedCrimes = selectedCrimes.reset_index(drop=True)
+        #print selectedCrimes.to_string(index=False)
+        #selectedCrimes.to_csv('Tenderloin_crimes.csv')
+        selectedCrimes.to_csv('Bigger_retion_crimes.csv')
+
+#        selectedCrimes = pd.DataFrame(train_data)
+
+ #       for index, row in self.train_data.iterrows():
+ #           x = row[4]
+ #           y = row[5]
+
+ #           if (x >= xlow) and (x <= xhigh) and (y >= ylow) and (y <= yhigh):
+ #               selectedCrimes.append(row, ignore_index=True)
+#        print selectedCrimes
     
     def processIntersectionToLatLong(self, lat_long_filename):
         print 'I am at lat long'
@@ -180,7 +202,15 @@ class Processor(object):
 nodemap = {'37.764861, -122.422886': ['37.764835, -122.423143', '37.764029, -122.422814', '37.764922, -122.421910'], \
            '37.763967, -122.424070': ['37.764777, -122.424146','37.764027, -122.422799']}
 process = Processor('AIzaSyCufQQEadq3JZOx5sXfwpfy4AUcR1AIXMM')
+<<<<<<< HEAD
+#process.processTrafficCSV('List_of_Intersections_only.csv')
+process.processTrainCSV('train.csv')
+#process.processTrafficData()
+#process.printCrimesInRegion(-122.42372, -122.40668, 37.78251, 37.78852) - for Tenderloin
+process.printCrimesInRegion(-122.45498, -122.39439, 37.75422, 37.78631)
+=======
 process.processTrafficCSV('List_of_Intersections_only.csv')
 # process.processTrainCSV('train.csv')
 process.processTrafficData()
 process.processIntersectionToLatLong('IntersectionsWithLatLng.csv')
+>>>>>>> ecadb059561463a961a10bdf4796a32dfb7904cb
