@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import internode
 import responses, googlemaps, csv
 
@@ -40,34 +41,35 @@ class Processor(object):
     """
     def processTrafficData(self):
         for index, row in self.traffic_data.iterrows():
+
             adjacent_list = []
-            if self.traffic_data.at(index - 1, 'inter1') == row[0]:
-                key1 = self.traffic_data.at(index - 1, 'inter1') + ', ' + self.traffic_data.at(index - 1, 'inter2')
-                adjacent_list.append(key1)
-                print key1
+            if index > 1:
+                if self.traffic_data.ix[index - 1]['inter1'] == row[0]:
+                    key1 = self.traffic_data.ix[index - 1]['inter1'] + ', ' + self.traffic_data.ix[index - 1]['inter2']
+                    adjacent_list.append(key1)
+                    
+                if self.traffic_data.ix[index + 1]['inter1'] == row[0]:
+                    key2 = self.traffic_data.ix[index + 1]['inter1'] + ', ' + self.traffic_data.ix[index + 1]['inter2']
+                    adjacent_list.append(key2)
                 
-            if self.traffic_data.at(index + 1, 'inter1') == row[0]:
-                key2 = self.traffic_data.at(index + 1, 'inter1') + ', ' + self.traffic_data.at(index + 1, 'inter2')
-                adjacent_list.append(key2)
-                print key2
-            
-            keylist = self.traffic_data[(self.traffic_data['inter1'] == row[1]) and (self.traffic_data['inter2'] == row[0])]
-            if len(keylist) == 1:
-                ind = keylist[0]    
-                if self.traffic_data.at(ind - 1, 'inter1') == row[0]:
-                    key3 = self.traffic_data.at(ind - 1, 'inter1') + ', ' + self.traffic_data.at(ind - 1, 'inter2')
-                    adjacent_list.append(key3)
-                    print key3
+                keylist = np.where(self.traffic_data['inter1'] == row[1])[0]
+                keylist1 = np.where(self.traffic_data['inter2'] == row[0])[0]
                 
-                if self.traffic_data.at(ind + 1, 'inter1') == row[0]:
-                    key4 = self.traffic_data.at(ind + 1, 'inter1') + ', ' + self.traffic_data.at(ind + 1, 'inter2')
-                    adjacent_list.append(key4)
-                    print key4
-                    print '--------------'
-            
+                ind_list = np.intersect1d(keylist, keylist1)
+                if len(ind_list) >= 1:
+                    ind = ind_list[0]
+                    
+                    if self.traffic_data.ix[ind - 1]['inter1'] == row[1]:
+                        key3 = self.traffic_data.ix[ind - 1]['inter1'] + ', ' + self.traffic_data.ix[ind - 1]['inter2']
+                        adjacent_list.append(key3)
+                    
+                    if self.traffic_data.ix[ind + 1]['inter1'] == row[1]:
+                        key4 = self.traffic_data.ix[ind + 1]['inter1'] + ', ' + self.traffic_data.ix[ind + 1]['inter2']
+                        adjacent_list.append(key4)
+                
             node = row['node']
             node.setAdjacents(adjacent_list)
-    
+            print node
     """
     Processes traffic intersection data and populates it with relevant information
     as a Pandas Data Frame

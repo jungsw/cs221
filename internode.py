@@ -9,6 +9,9 @@ Created on Nov 28, 2015
 
 class IntersectionNode(object):
     
+    def __str__(self):
+        return self.street1 + ' | ' + self.street2 + ' | ' + ','.join(self.adjacent)
+    
     def __init__(self, inter1, inter2, gmap):
         '''
         Node is defined as an intersection of two or more roads, represented by lat/longitude.
