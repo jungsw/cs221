@@ -136,8 +136,7 @@ class Processor(object):
         with open(lat_long_filename, 'rb') as csvfile:
             mapreader = csv.reader(csvfile, delimiter = '|')
             next(mapreader, None)
-            
-            count = 0
+
             for row in mapreader:
                 latlong_list = row[0].strip('*').split(',')
                 latlong_list[0] = latlong_list[0].strip(' ')
@@ -164,20 +163,14 @@ class Processor(object):
                         ind_list1 = np.intersect1d(keylist2, keylist3)
                         
                         if len(ind_list) >= 1:
-                            print stnames
-                            index = ind_list[0]
+                            index = int(ind_list[0])
                             self.traffic_data.set_value(index, 'x_loc', latlong_list[0])
                             self.traffic_data.set_value(index, 'y_loc', latlong_list[1])
-
+                            
                         elif len(ind_list1) >= 1:
-                            print stnames
-                            index1 = ind_list1[0]
+                            index1 = int(ind_list1[0])
                             self.traffic_data.set_value(index1, 'x_loc', latlong_list[0])
                             self.traffic_data.set_value(index1, 'y_loc', latlong_list[1])
-
-                            
-            print self.traffic_data      
-                    # print ':'+stnames[0]+':'+stnames[1]+':'
                 
     
     def processDistances(self):
