@@ -3,10 +3,13 @@ import math
 
 #name = string, x,y = latitude, longitude of the node, adjNodeName = list of names of nodes that are adjacent to the node, 
 class Node:
-    def __init__(self, name, x, y, adjNodeName): self.name, self.location, self.adjNodeName = name, (x,y), adjNodeName
+    def __init__(self, name, location, adjNodeName): self.name, self.location, self.adjNodeName = name, location, adjNodeName
 
 def dist(a,b):
     return math.sqrt((a[0] - b[0])**2 + (a[1] -b[1])**2)
+
+def tupleToString(streetTuple):
+    return '(' + streetTuple[0] + ',' + streetTuple[1] + ')' 
 
 #name to Node map: returns Node object when called by NodeMap[name]
 class PathProblem(util.SearchProblem):
@@ -16,23 +19,52 @@ class PathProblem(util.SearchProblem):
     def succAndCost(self, state):
         results = []
         for adjNode in self.NodeMap[state].adjNodeName:
-            results.append((state+'->'+adjNode, adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location)))
+            if adjNode not in self.NodeMap: continue
+            #results.append((tupleToString(state)+'->'+ tupleToString(adjNode), adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location)))
+            #results.append(( tupleToString(state)+'->'+ tupleToString(adjNode), adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) + dist(self.NodeMap[adjNode].location, self.NodeMap[self.end].location) - dist(self.NodeMap[state].location, self.NodeMap[self.end].location)))
+            results.append(( self.NodeMap[state].location, adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) + dist(self.NodeMap[adjNode].location, self.NodeMap[self.end].location) - dist(self.NodeMap[state].location, self.NodeMap[self.end].location)))
         return results
 
+
+
 def main():
-    AANode = Node('AA', 0, 0, ['AB', 'BA'])
+
+    inputFile = open('traffic_result.csv', 'r')
+    NodeMap = {}
+    result = {}
+
+    for line in inputFile.readlines():
+        if line[0]==',': continue
+    
+        s1 = line.split('|')[0].split(',')
+        sKey = (s1[1], s1[2])
+
+        s2 = line.split('|')[-1].split(',')
+        latLng = (float(s2[-2]), float(s2[-1].replace('\n','')))
+
+        adjacentList = []
+        for x, y in zip(*[iter(s2[0:-2])]*2):
+            x = x.replace('"', '')
+            y = y.replace('"', '')
+            adjacentList.append((x.strip(), y.strip()))
+    
+        NodeMap[sKey] = Node(sKey, latLng, adjacentList)
+
+    #print NodeMap
+    
+    #AANode = Node('AA', (0, 0), ['AB', 'BA'])
     #AB->BC is possible!
-    ABNode = Node('AB', 1, 0, ['AA', 'BB','AC','BC'])
-    ACNode = Node('AC', 2, 0, ['AB', 'BC'])
-    BANode = Node('BA', 0, 1, ['AA', 'BB','CA'])
-    BBNode = Node('BB', 1, 1, ['AB', 'BA','CB','BC'])
-    BCNode = Node('BC', 2, 1, ['AC', 'CC','BB'])
-    CANode = Node('CA', 0, 2, ['BA', 'CB'])
-    CBNode = Node('CB', 1, 2, ['CA', 'BB','CC'])
-    CCNode = Node('CC', 2, 2, ['BC', 'CB'])
-    NodeMap = {'AA':AANode, 'AB':ABNode, 'AC':ACNode, 'BA':BANode, 'BB':BBNode, 'BC':BCNode, 'CA':CANode, 'CB':CBNode, 'CC':CCNode}
+    #ABNode = Node('AB', (1, 0), ['AA', 'BB','AC','BC'])
+    #ACNode = Node('AC', (2, 0), ['AB', 'BC'])
+    #BANode = Node('BA', (0, 1), ['AA', 'BB','CA'])
+    #BBNode = Node('BB', (1, 1), ['AB', 'BA','CB','BC'])
+    #BCNode = Node('BC', (2, 1), ['AC', 'CC','BB'])
+    #CANode = Node('CA', (0, 2), ['BA', 'CB'])
+    #CBNode = Node('CB', (1, 2), ['CA', 'BB','CC'])
+    #CCNode = Node('CC', (2, 2), ['BC', 'CB'])
+    #NodeMap = {'AA':AANode, 'AB':ABNode, 'AC':ACNode, 'BA':BANode, 'BB':BBNode, 'BC':BCNode, 'CA':CANode, 'CB':CBNode, 'CC':CCNode}
     ucs = util.UniformCostSearch(verbose=0)
-    ucs.solve(PathProblem('AA','CC',NodeMap))
+    ucs.solve(PathProblem(('EDDY ST', 'POLK ST'), ('GEARY ST', 'MASON ST'),NodeMap))
     actions = ucs.actions
     print actions
 
