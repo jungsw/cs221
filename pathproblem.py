@@ -6,7 +6,7 @@ import show_map
 
 #name = string, x,y = latitude, longitude of the node, adjNodeName = list of names of nodes that are adjacent to the node, 
 class Node:
-    def __init__(self, name, location, adjNodeName): self.name, self.location, self.adjNodeName = name, location, adjNodeName
+    def __init__(self, name, location, adjNodeName, crimeOccurrence): self.name, self.location, self.adjNodeName, self.crimeOccurrence = name, location, adjNodeName, crimeOccurrence
 
 def dist(a,b):
     return math.sqrt((a[0] - b[0])**2 + (a[1] -b[1])**2)
@@ -31,13 +31,48 @@ class PathProblem(util.SearchProblem):
             results.append(( self.NodeMap[state].location, adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) + dist(self.NodeMap[adjNode].location, self.NodeMap[self.end].location) - dist(self.NodeMap[state].location, self.NodeMap[self.end].location)))
         return results
 
+#Makes crime map: key is (x_loc, y_loc), value is crime type
+def makeCrimeMap():
+    inputfile = open('../train.csv', 'r')
+    crimeMap = {}
+    
+    count = 0
+    for line in inputfile.readlines():
+        if count == 0:
+            count += 1
+            continue
+        lined = line.split('"')
+        if len(lined) > 1:
+            lined[1] = lined[1].replace(',', '')
+        data = ''.join(lined).split(',')
+        if (len(data) == 9):
+            crime_type = data[1]
 
+            loc_key = (float(data[8].strip(' ')), float(data[7].strip(' ')))
+            crimeMap[loc_key] = crime_type
+    
+    #print crimeMap
+    return crimeMap
+
+#Makes crime dictionary: key is the type of the crime, value is the occurrence, in square range
+def makeCrimeOccurrence(x_loc, y_loc, xpm, ypm, crimeMap):
+    crimeOccurrence = {}
+    for key in crimeMap.keys():
+        if key[0] > x_loc - xpm and key[0] < x_loc + xpm and key[1] > y_loc - ypm and key[1] < y_loc + ypm:
+            if crimeMap[key] in crimeOccurrence:
+                crimeOccurrence[crimeMap[key]] += 1
+            else:
+                crimeOccurrence[crimeMap[key]] = 1
+                
+    #print crime_dict
+    return crimeOccurrence
 
 def main():
 
     inputFile = open('traffic_result.csv', 'r')
     NodeMap = {}
     result = {}
+    crimeMap = makeCrimeMap()
 
     for line in inputFile.readlines():
         if line[0]==',': continue
@@ -54,7 +89,19 @@ def main():
             y = y.replace('"', '')
             adjacentList.append((x.strip(), y.strip()))
     
-        NodeMap[sKey] = Node(sKey, latLng, adjacentList)
+        #NodeMap[sKey] = Node(sKey, latLng, adjacentList)
+        crimeOccurrence = makeCrimeOccurrence(latLng[0], latLng[1], 0.00325016538, 0.00325016538, crimeMap)
+        NodeMap[sKey] = Node(sKey, latLng, adjacentList, crimeOccurrence)
+
+    outputFile = open('NodeMap.csv', 'w')
+    for sKey, node in NodeMap.iteritems():
+        line = str(node.name) + '|' + str(node.location) + '|' + str(node.adjNodeName) + '|' + str(node.crimeOccurrence) + '\n'
+        print(line)
+        outputFile.write(line)
+    outputFile.close()
+    #with open("nodemap.csv", "w") as out:
+    #    for sKey, node in NodeMap.iteritems():
+    #        print(node.sKey, node.latLng, node.adjacentList, node.crimeOccurrence, file=out)
 
     #print NodeMap
     
