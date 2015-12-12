@@ -55,6 +55,18 @@ def makeCrimeMap():
     #print crimeMap
     return crimeMap
 
+def makeCrimeLocs(x_loc, y_loc, xpm, ypm, crimeMap):
+    crimeLocs = {}
+    for key in crimeMap.keys():
+        if key[0] > x_loc - xpm and key[0] < x_loc + xpm and key[1] > y_loc - ypm and key[1] < y_loc + ypm:
+            if crimeMap[key] in crimeLocs:
+                crimeLocs[crimeMap[key]].append(key)
+            else:
+                crimeLocs[crimeMap[key]] = []
+                crimeLocs[crimeMap[key]].append(key)
+    
+    return crimeLocs
+
 #Makes crime dictionary: key is the type of the crime, value is the occurrence, in square range
 def makeCrimeOccurrence(x_loc, y_loc, xpm, ypm, crimeMap):
     crimeOccurrence = {}
@@ -67,6 +79,38 @@ def makeCrimeOccurrence(x_loc, y_loc, xpm, ypm, crimeMap):
                 
     #print crime_dict
     return crimeOccurrence
+
+def process():
+    inputFile = open('traffic_result.csv', 'r')
+    NodeMap = {}
+    result = {}
+    crimeMap = makeCrimeMap()
+
+    for line in inputFile.readlines():
+        if line[0]==',': continue
+    
+        s1 = line.split('|')[0].split(',')
+        sKey = (s1[1], s1[2])
+        
+        s2 = line.split('|')[-1].split(',')
+        latLng = (float(s2[-2]), float(s2[-1].replace('\n','')))
+
+        adjacentList = []
+        for x, y in zip(*[iter(s2[0:-2])]*2):
+            x = x.replace('"', '')
+            y = y.replace('"', '')
+            adjacentList.append((x.strip(), y.strip()))
+        #NodeMap[sKey] = Node(sKey, latLng, adjacentList)
+        crimeLocs = makeCrimeLocs(latLng[0], latLng[1], 0.00325016538, 0.00325016538, crimeMap)
+        print(crimeLocs)
+        NodeMap[sKey] = Node(sKey, latLng, adjacentList, crimeLocs)
+
+    outputFile = open('NodeMapList.csv', 'w')
+    for sKey, node in NodeMap.iteritems():
+        line = str(node.name) + '|' + str(node.location) + '|' + str(node.adjNodeName) + '|' + str(node.crimeOccurrence) + '\n'
+        print(line)
+        outputFile.write(line)
+    outputFile.close()
 
 def main():
 
@@ -83,7 +127,7 @@ def main():
         
         s2 = line.split('|')[-1].split(',')
         latLng = (float(s2[-2]), float(s2[-1].replace('\n','')))
-        print latLng
+
         adjacentList = []
         for x, y in zip(*[iter(s2[0:-2])]*2):
             x = x.replace('"', '')
@@ -127,4 +171,4 @@ def main():
     #print actions
 
 if __name__ == "__main__":
-    main()
+    process()
