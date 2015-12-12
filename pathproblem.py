@@ -3,6 +3,7 @@ import util
 import math
 import show_map
 from ast import literal_eval
+import sys
 
 #name = string, x,y = latitude, longitude of the node, adjNodeName = list of names of nodes that are adjacent to the node, 
 # 
@@ -22,11 +23,12 @@ def tupleToString(streetTuple):
 
 #name to Node map: returns Node object when called by NodeMap[name]
 class PathProblem(util.SearchProblem):
-    def __init__(self, startStateName, endStateName, NodeMap): self.start, self.end, self.NodeMap = startStateName, endStateName, NodeMap
+    def __init__(self, startStateName, endStateName, NodeMap, gaussianTrue, penalty_constant): self.start, self.end, self.NodeMap, self.gaussianTrue, self.penalty_constant \
+                                                                                                = startStateName, endStateName, NodeMap, gaussianTrue, penalty_constant
     def startState(self): return self.start
     def isGoal(self, state): return state == self.end
     def succAndCost(self, state):
-        penalty_constant = 0.001
+        #penalty_constant = 0.001
         sigma = 0.001625   #Average distance of a block
         results = []
         for adjNode in self.NodeMap[state].adjNodeName:
@@ -41,16 +43,22 @@ class PathProblem(util.SearchProblem):
             #        crime_penalty = crime_penalty + penalty_constant * math.exp(- (dist(node_location, x)**2) / (2 * sigma ** 2) )
             
             #Linear penalty
-            crime_penalty = penalty_constant * sum(self.NodeMap[adjNode].crimeOccurrence.values())
+            if self.gaussianTrue == 0:
+                crime_penalty = self.penalty_constant * sum(self.NodeMap[adjNode].crimeOccurrence.values())
+            else:
+                crime_penalty = 0
+                node_location = self.NodeMap[state].location
+                for value in self.NodeMap[adjNode].crimeList.values():
+                    for x in value:
+                        crime_penalty = crime_penalty + self.penalty_constant * math.exp(- (dist(node_location, x)**2) / (2 * sigma ** 2) )
             
-            #Original cost
+            #Without A* enhancement
             #results.append((tupleToString(state)+'->'+ tupleToString(adjNode), adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location)))
             
             #A* cost - using Euclidean as heuristic h - used as default
             #results.append(( tupleToString(state)+'->'+ tupleToString(adjNode), adjNode, crime_penalty + dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) + dist(self.NodeMap[adjNode].location, self.NodeMap[self.end].location) - dist(self.NodeMap[state].location, self.NodeMap[self.end].location)))
             
-            #printing out in x_loc, y_loc for show_map.py usage
-            
+            #printing out in x_loc, y_loc for show_map.py usage --> will become a google map!
             results.append(( self.NodeMap[state].location, adjNode, crime_penalty + dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) + dist(self.NodeMap[adjNode].location, self.NodeMap[self.end].location) - dist(self.NodeMap[state].location, self.NodeMap[self.end].location)))
         return results
 
@@ -102,6 +110,7 @@ def makeCrimeOccurrence(x_loc, y_loc, xpm, ypm, crimeMap):
     #print crime_dict
     return crimeOccurrence
 
+#Function that makes NodeMapList that contains all required information regards nodes - called only once to produce 'NodeMapList.csv'
 def process():
     inputFile = open('traffic_result.csv', 'r')
     NodeMap = {}
@@ -135,7 +144,21 @@ def process():
     outputFile.close()
 
 def main():
-    # writeToCSV()
+
+    #Change the startIntersection and endIntersection here, whether to use Gaussian or Linear model, and penalty constant here!
+    startIntersection = ('GOLDEN GATE AVE', 'WEBSTER ST')
+    endIntersection = ('CHESTNUT ST', 'POWELL ST')
+
+    gaussianTrue = 0
+    penalty_constant = 0.001
+
+    print("The output path is drawn in output.html file")
+    #elif len(sys.argv) == 5:
+    #    startIntersectoin = (sys.argv[2], sys.argv[3])
+    #    endIntersection = (sys.argv[4], sys.argv[5])
+    #else:
+    #    print "Wrong number of arguments"
+    #    return
 
     # Read from processed CSV
     processedFile = open('NodeMapList.csv', 'r')
@@ -151,6 +174,17 @@ def main():
 
         NodeMap[sKey] = Node(sKey, latLng, adjacent, crimeOccur, crimeList)
     
+    ucs = util.UniformCostSearch(verbose=0)
+    ucs.solve(PathProblem(startIntersection, endIntersection,NodeMap, gaussianTrue, penalty_constant))
+    actions = ucs.actions
+    points = actions
+
+    #Draws points on Google Map
+    map = show_map.Map(points)
+    with open("output.html", "w") as out:
+        print(map, file=out)
+    
+    #Mockup for UCS
     #AANode = Node('AA', (0, 0), ['AB', 'BA'])
     #AB->BC is possible!
     #ABNode = Node('AB', (1, 0), ['AA', 'BB','AC','BC'])
@@ -162,18 +196,9 @@ def main():
     #CBNode = Node('CB', (1, 2), ['CA', 'BB','CC'])
     #CCNode = Node('CC', (2, 2), ['BC', 'CB'])
     #NodeMap = {'AA':AANode, 'AB':ABNode, 'AC':ACNode, 'BA':BANode, 'BB':BBNode, 'BC':BCNode, 'CA':CANode, 'CB':CBNode, 'CC':CCNode}
-    ucs = util.UniformCostSearch(verbose=0)
+ 
 
-    ucs.solve(PathProblem(('MCALLISTER ST', 'HYDE ST'), ('GEARY ST', 'MASON ST'),NodeMap))
-    actions = ucs.actions
-    points = actions
-#    print(points)   
-    map = show_map.Map(points)
-    with open("output.html", "w") as out:
-        print(map, file=out)
-    #print actions
-
-#Not used anymore
+#Not used anymore - replaced by process() function
 def writeToCSV():
     inputFile = open('traffic_result.csv', 'r')
     NodeMap = {}
