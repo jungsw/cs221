@@ -2,12 +2,17 @@ from __future__ import print_function
 import util
 import math
 import show_map
-
+from ast import literal_eval
 
 #name = string, x,y = latitude, longitude of the node, adjNodeName = list of names of nodes that are adjacent to the node, 
 # 
 class Node:
-    def __init__(self, name, location, adjNodeName, crimeOccurrence): self.name, self.location, self.adjNodeName, self.crimeOccurrence = name, location, adjNodeName, crimeOccurrence
+    def __init__(self, name, location, adjNodeName, crimeOccurrence, crimeList): 
+        self.name, self.location, self.adjNodeName, self.crimeOccurrence, self.crimeList = name, location, adjNodeName, crimeOccurrence, crimeList
+
+    def __str__(self):
+        print(self.name, self.location, self.adjNodeName, self.crimeOccurrence, self.crimeList)
+
 
 def dist(a,b):
     return math.sqrt((a[0] - b[0])**2 + (a[1] -b[1])**2)
@@ -101,19 +106,66 @@ def process():
             y = y.replace('"', '')
             adjacentList.append((x.strip(), y.strip()))
         #NodeMap[sKey] = Node(sKey, latLng, adjacentList)
+        crimeOcc = makeCrimeOccurrence(latLng[0], latLng[1], 0.00325016538, 0.00325016538, crimeMap)
         crimeLocs = makeCrimeLocs(latLng[0], latLng[1], 0.00325016538, 0.00325016538, crimeMap)
-        print(crimeLocs)
-        NodeMap[sKey] = Node(sKey, latLng, adjacentList, crimeLocs)
+        NodeMap[sKey] = Node(sKey, latLng, adjacentList, crimeOcc, crimeLocs)
 
     outputFile = open('NodeMapList.csv', 'w')
     for sKey, node in NodeMap.iteritems():
-        line = str(node.name) + '|' + str(node.location) + '|' + str(node.adjNodeName) + '|' + str(node.crimeOccurrence) + '\n'
+        line = str(node.name) + '|' + str(node.location) + '|' + str(node.adjNodeName) + '|' + str(node.crimeOccurrence) + '|' + str(node.crimeList) + '\n'
         print(line)
         outputFile.write(line)
     outputFile.close()
 
 def main():
+    # writeToCSV()
 
+    # Read from processed CSV
+    processedFile = open('NodeMapList.csv', 'r')
+
+    NodeMap = {}
+    for line in processedFile.readlines():
+        d = line.split('|')
+        sKey = literal_eval(d[0])
+        latLng = literal_eval(d[1])
+        adjacent = literal_eval(d[2])
+        crimeOccur = literal_eval(d[3])
+        crimeList = literal_eval(d[4])
+
+        NodeMap[sKey] = Node(sKey, latLng, adjacent, crimeOccur, crimeList)
+        
+
+
+
+    
+    #with open("nodemap.csv", "w") as out:
+    #    for sKey, node in NodeMap.iteritems():
+    #        print(node.sKey, node.latLng, node.adjacentList, node.crimeOccurrence, file=out)
+
+    #print NodeMap
+    
+    #AANode = Node('AA', (0, 0), ['AB', 'BA'])
+    #AB->BC is possible!
+    #ABNode = Node('AB', (1, 0), ['AA', 'BB','AC','BC'])
+    #ACNode = Node('AC', (2, 0), ['AB', 'BC'])
+    #BANode = Node('BA', (0, 1), ['AA', 'BB','CA'])
+    #BBNode = Node('BB', (1, 1), ['AB', 'BA','CB','BC'])
+    #BCNode = Node('BC', (2, 1), ['AC', 'CC','BB'])
+    #CANode = Node('CA', (0, 2), ['BA', 'CB'])
+    #CBNode = Node('CB', (1, 2), ['CA', 'BB','CC'])
+    #CCNode = Node('CC', (2, 2), ['BC', 'CB'])
+    #NodeMap = {'AA':AANode, 'AB':ABNode, 'AC':ACNode, 'BA':BANode, 'BB':BBNode, 'BC':BCNode, 'CA':CANode, 'CB':CBNode, 'CC':CCNode}
+    ucs = util.UniformCostSearch(verbose=0)
+    ucs.solve(PathProblem(('GOLDEN GATE AVE', 'WEBSTER ST'), ('CHESTNUT ST', 'POWELL ST'),NodeMap))
+    actions = ucs.actions
+    points = actions
+    
+    map = show_map.Map(points)
+    with open("output.html", "w") as out:
+        print(map, file=out)
+    #print actions
+
+def writeToCSV():
     inputFile = open('traffic_result.csv', 'r')
     NodeMap = {}
     result = {}
@@ -143,32 +195,7 @@ def main():
         print(line)
         outputFile.write(line)
     outputFile.close()
-    #with open("nodemap.csv", "w") as out:
-    #    for sKey, node in NodeMap.iteritems():
-    #        print(node.sKey, node.latLng, node.adjacentList, node.crimeOccurrence, file=out)
 
-    #print NodeMap
-    
-    #AANode = Node('AA', (0, 0), ['AB', 'BA'])
-    #AB->BC is possible!
-    #ABNode = Node('AB', (1, 0), ['AA', 'BB','AC','BC'])
-    #ACNode = Node('AC', (2, 0), ['AB', 'BC'])
-    #BANode = Node('BA', (0, 1), ['AA', 'BB','CA'])
-    #BBNode = Node('BB', (1, 1), ['AB', 'BA','CB','BC'])
-    #BCNode = Node('BC', (2, 1), ['AC', 'CC','BB'])
-    #CANode = Node('CA', (0, 2), ['BA', 'CB'])
-    #CBNode = Node('CB', (1, 2), ['CA', 'BB','CC'])
-    #CCNode = Node('CC', (2, 2), ['BC', 'CB'])
-    #NodeMap = {'AA':AANode, 'AB':ABNode, 'AC':ACNode, 'BA':BANode, 'BB':BBNode, 'BC':BCNode, 'CA':CANode, 'CB':CBNode, 'CC':CCNode}
-    ucs = util.UniformCostSearch(verbose=0)
-    ucs.solve(PathProblem(('GOLDEN GATE AVE', 'WEBSTER ST'), ('CHESTNUT ST', 'POWELL ST'),NodeMap))
-    actions = ucs.actions
-    points = actions
-    
-    map = show_map.Map(points)
-    with open("output.html", "w") as out:
-        print(map, file=out)
-    #print actions
 
 if __name__ == "__main__":
     process()
