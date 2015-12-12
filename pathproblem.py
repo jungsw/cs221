@@ -1,5 +1,8 @@
+from __future__ import print_function
 import util
 import math
+import show_map
+
 
 #name = string, x,y = latitude, longitude of the node, adjNodeName = list of names of nodes that are adjacent to the node, 
 class Node:
@@ -20,8 +23,11 @@ class PathProblem(util.SearchProblem):
         results = []
         for adjNode in self.NodeMap[state].adjNodeName:
             if adjNode not in self.NodeMap: continue
+            #Original cost
             #results.append((tupleToString(state)+'->'+ tupleToString(adjNode), adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location)))
+            #A* cost - using Euclidean as heuristic h
             #results.append(( tupleToString(state)+'->'+ tupleToString(adjNode), adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) + dist(self.NodeMap[adjNode].location, self.NodeMap[self.end].location) - dist(self.NodeMap[state].location, self.NodeMap[self.end].location)))
+            #printing out in x_loc, y_loc for show_map.py usage
             results.append(( self.NodeMap[state].location, adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) + dist(self.NodeMap[adjNode].location, self.NodeMap[self.end].location) - dist(self.NodeMap[state].location, self.NodeMap[self.end].location)))
         return results
 
@@ -64,9 +70,14 @@ def main():
     #CCNode = Node('CC', (2, 2), ['BC', 'CB'])
     #NodeMap = {'AA':AANode, 'AB':ABNode, 'AC':ACNode, 'BA':BANode, 'BB':BBNode, 'BC':BCNode, 'CA':CANode, 'CB':CBNode, 'CC':CCNode}
     ucs = util.UniformCostSearch(verbose=0)
-    ucs.solve(PathProblem(('EDDY ST', 'POLK ST'), ('GEARY ST', 'MASON ST'),NodeMap))
+    ucs.solve(PathProblem(('GOLDEN GATE AVE', 'WEBSTER ST'), ('CHESTNUT ST', 'POWELL ST'),NodeMap))
     actions = ucs.actions
-    print actions
+    points = actions
+    
+    map = show_map.Map(points)
+    with open("output.html", "w") as out:
+        print(map, file=out)
+    #print actions
 
 if __name__ == "__main__":
     main()
