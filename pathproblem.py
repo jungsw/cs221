@@ -5,6 +5,7 @@ import show_map
 
 
 #name = string, x,y = latitude, longitude of the node, adjNodeName = list of names of nodes that are adjacent to the node, 
+# 
 class Node:
     def __init__(self, name, location, adjNodeName, crimeOccurrence): self.name, self.location, self.adjNodeName, self.crimeOccurrence = name, location, adjNodeName, crimeOccurrence
 
@@ -79,16 +80,15 @@ def main():
     
         s1 = line.split('|')[0].split(',')
         sKey = (s1[1], s1[2])
-
+        
         s2 = line.split('|')[-1].split(',')
         latLng = (float(s2[-2]), float(s2[-1].replace('\n','')))
-
+        print latLng
         adjacentList = []
         for x, y in zip(*[iter(s2[0:-2])]*2):
             x = x.replace('"', '')
             y = y.replace('"', '')
             adjacentList.append((x.strip(), y.strip()))
-    
         #NodeMap[sKey] = Node(sKey, latLng, adjacentList)
         crimeOccurrence = makeCrimeOccurrence(latLng[0], latLng[1], 0.00325016538, 0.00325016538, crimeMap)
         NodeMap[sKey] = Node(sKey, latLng, adjacentList, crimeOccurrence)
