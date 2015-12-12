@@ -21,7 +21,7 @@ def processcrimeCSV(crime_filename):
         
 
 
-crime_data = processcrimeCSV('Bigger_retion_crimes.csv')
+crime_data = processcrimeCSV('Tenderloin_passing_region_crimes.csv')
 x = crime_data['x_loc']
 y = crime_data['y_loc']
 plt.scatter(x, y)

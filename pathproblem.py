@@ -11,7 +11,7 @@ class Node:
         self.name, self.location, self.adjNodeName, self.crimeOccurrence, self.crimeList = name, location, adjNodeName, crimeOccurrence, crimeList
 
     def __str__(self):
-        print(self.name, self.location, self.adjNodeName, self.crimeOccurrence, self.crimeList)
+        return str(self.name) + ',' + str(self.location) + ',' + str(self.adjNodeName) + ',' + str(self.crimeOccurrence) + ',' + str(self.crimeList)
 
 
 def dist(a,b):
@@ -26,15 +26,32 @@ class PathProblem(util.SearchProblem):
     def startState(self): return self.start
     def isGoal(self, state): return state == self.end
     def succAndCost(self, state):
+        penalty_constant = 0.001
+        sigma = 0.001625   #Average distance of a block
         results = []
         for adjNode in self.NodeMap[state].adjNodeName:
             if adjNode not in self.NodeMap: continue
+            if dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) > 0.005: continue
+            
+            #Gaussian filtering - used as default
+            #crime_penalty = 0
+            #node_location = self.NodeMap[state].location
+            #for value in self.NodeMap[adjNode].crimeList.values():
+            #    for x in value:
+            #        crime_penalty = crime_penalty + penalty_constant * math.exp(- (dist(node_location, x)**2) / (2 * sigma ** 2) )
+            
+            #Linear penalty
+            crime_penalty = penalty_constant * sum(self.NodeMap[adjNode].crimeOccurrence.values())
+            
             #Original cost
             #results.append((tupleToString(state)+'->'+ tupleToString(adjNode), adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location)))
-            #A* cost - using Euclidean as heuristic h
-            #results.append(( tupleToString(state)+'->'+ tupleToString(adjNode), adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) + dist(self.NodeMap[adjNode].location, self.NodeMap[self.end].location) - dist(self.NodeMap[state].location, self.NodeMap[self.end].location)))
+            
+            #A* cost - using Euclidean as heuristic h - used as default
+            #results.append(( tupleToString(state)+'->'+ tupleToString(adjNode), adjNode, crime_penalty + dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) + dist(self.NodeMap[adjNode].location, self.NodeMap[self.end].location) - dist(self.NodeMap[state].location, self.NodeMap[self.end].location)))
+            
             #printing out in x_loc, y_loc for show_map.py usage
-            results.append(( self.NodeMap[state].location, adjNode, dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) + dist(self.NodeMap[adjNode].location, self.NodeMap[self.end].location) - dist(self.NodeMap[state].location, self.NodeMap[self.end].location)))
+            
+            results.append(( self.NodeMap[state].location, adjNode, crime_penalty + dist(self.NodeMap[state].location, self.NodeMap[adjNode].location) + dist(self.NodeMap[adjNode].location, self.NodeMap[self.end].location) - dist(self.NodeMap[state].location, self.NodeMap[self.end].location)))
         return results
 
 #Makes crime map: key is (x_loc, y_loc), value is crime type
@@ -133,16 +150,6 @@ def main():
         crimeList = literal_eval(d[4])
 
         NodeMap[sKey] = Node(sKey, latLng, adjacent, crimeOccur, crimeList)
-        
-
-
-
-    
-    #with open("nodemap.csv", "w") as out:
-    #    for sKey, node in NodeMap.iteritems():
-    #        print(node.sKey, node.latLng, node.adjacentList, node.crimeOccurrence, file=out)
-
-    #print NodeMap
     
     #AANode = Node('AA', (0, 0), ['AB', 'BA'])
     #AB->BC is possible!
@@ -156,15 +163,17 @@ def main():
     #CCNode = Node('CC', (2, 2), ['BC', 'CB'])
     #NodeMap = {'AA':AANode, 'AB':ABNode, 'AC':ACNode, 'BA':BANode, 'BB':BBNode, 'BC':BCNode, 'CA':CANode, 'CB':CBNode, 'CC':CCNode}
     ucs = util.UniformCostSearch(verbose=0)
-    ucs.solve(PathProblem(('GOLDEN GATE AVE', 'WEBSTER ST'), ('CHESTNUT ST', 'POWELL ST'),NodeMap))
+
+    ucs.solve(PathProblem(('MCALLISTER ST', 'HYDE ST'), ('GEARY ST', 'MASON ST'),NodeMap))
     actions = ucs.actions
     points = actions
-    
+#    print(points)   
     map = show_map.Map(points)
     with open("output.html", "w") as out:
         print(map, file=out)
     #print actions
 
+#Not used anymore
 def writeToCSV():
     inputFile = open('traffic_result.csv', 'r')
     NodeMap = {}
@@ -198,4 +207,4 @@ def writeToCSV():
 
 
 if __name__ == "__main__":
-    process()
+    main()

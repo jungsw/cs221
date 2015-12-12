@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import internode
 import responses, googlemaps, csv
-from _snap import count
+#from _snap import count
 from _Res import Count1Resources
 
 '''
@@ -139,10 +139,11 @@ class Processor(object):
         yupperbound = (self.train_data['y_loc'] <= yhigh)
 
         selectedCrimes = self.train_data[xlowerbound & xupperbound & ylowerbound & yupperbound].reindex(columns=['x_loc', 'y_loc'])
+        #selectedCrimes = self.train_data.reindex(columns=['x_loc', 'y_loc'])
         selectedCrimes = selectedCrimes.reset_index(drop=True)
         #print selectedCrimes.to_string(index=False)
         #selectedCrimes.to_csv('Tenderloin_crimes.csv')
-        selectedCrimes.to_csv('Bigger_retion_crimes.csv')
+        selectedCrimes.to_csv('Tenderloin_passing_region_crimes.csv')
 
 #        selectedCrimes = pd.DataFrame(train_data)
 
@@ -202,15 +203,15 @@ class Processor(object):
 nodemap = {'37.764861, -122.422886': ['37.764835, -122.423143', '37.764029, -122.422814', '37.764922, -122.421910'], \
            '37.763967, -122.424070': ['37.764777, -122.424146','37.764027, -122.422799']}
 process = Processor('AIzaSyCufQQEadq3JZOx5sXfwpfy4AUcR1AIXMM')
-<<<<<<< HEAD
+#<<<<<<< HEAD
 #process.processTrafficCSV('List_of_Intersections_only.csv')
-process.processTrainCSV('train.csv')
+process.processTrainCSV('../train.csv')
 #process.processTrafficData()
 #process.printCrimesInRegion(-122.42372, -122.40668, 37.78251, 37.78852) - for Tenderloin
-process.printCrimesInRegion(-122.45498, -122.39439, 37.75422, 37.78631)
-=======
-process.processTrafficCSV('List_of_Intersections_only.csv')
+process.printCrimesInRegion(-122.423800, -122.389200, 37.778508, 37.805400)
+#=======
+#process.processTrafficCSV('List_of_Intersections_only.csv')
 # process.processTrainCSV('train.csv')
-process.processTrafficData()
-process.processIntersectionToLatLong('IntersectionsWithLatLng.csv')
->>>>>>> ecadb059561463a961a10bdf4796a32dfb7904cb
+#process.processTrafficData()
+#process.processIntersectionToLatLong('IntersectionsWithLatLng.csv')
+#>>>>>>> ecadb059561463a961a10bdf4796a32dfb7904cb
